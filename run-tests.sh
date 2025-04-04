@@ -11,7 +11,12 @@ echo "Running WebdriverIO Tests..."
 npm run test:ci || EXIT_CODE=$?
 
 # Generate Allure report
-npm run report
+echo "Generating report..."
+if [ -d "allure-results" ]; then
+    npm run report
+else
+    echo "No allure-results directory found - no tests likely ran"
+fi
 
 # Exit with the test status
 exit ${EXIT_CODE}
