@@ -1,7 +1,6 @@
 import { Options } from '@wdio/types';
 import { dirname, join }  from 'path';
 import { fileURLToPath } from 'url';
-import { config as baseConfig } from '../wdio.base.conf';
 import { filterSpecs } from './runner-helpers/filter-spec-files';
 import { glob } from 'glob';
 import path from 'path';
@@ -30,12 +29,12 @@ export const customizer = (
 }
 
 export const config: Options.Testrunner = {
-    ...baseConfig, // one way of merging 
+    // ...baseConfig, // one way of merging 
     runner: 'local',
     specs: [
         // './tests/specs/**/*.ts',
         // './tests/apis/**/*.ts',
-        './tests/specs/**//*.ts',
+        './tests/specs/**/*.ts',
         // './tests/specs/basics_Tests/dataType.test.ts',
     ],
 

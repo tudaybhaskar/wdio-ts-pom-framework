@@ -1,0 +1,30 @@
+pipeline {
+    agent any 
+
+    stages {
+        stage('Checkout Code'){
+            steps{
+                git 'https://github.com/tudaybhaskar/wdio-ts-pom-framework.git'
+            }
+        }
+
+        stage('Install Dependences'){
+            steps{
+                sh 'npm install'
+            }
+        }
+
+        stage('Run Tests'){
+            steps {
+                sh 'chmod +x run-tests.sh' // Ensure script is executable
+                sh './run-tests.sh'
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'allure-report/**', fingerprint: true
+        }
+    }
+}
