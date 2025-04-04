@@ -1,6 +1,10 @@
-node_modules
+node_modules/
 
 .env
-allure-results
+allure-results/
 screenshots
 wdio.conf copy.txt
+
+allure-report/
+*.log
+.DS_Store

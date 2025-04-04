@@ -3,7 +3,15 @@
 echo "Installing dependencies..."
 npm install
 
-echo "Running WebdriverIO Tests..."
-npx wdio ./config/wdio.ci.conf.ts
+# Clean previous test results
+npm run clean
 
-exist $?
+echo "Running WebdriverIO Tests..."
+# Run tests
+npm run test:ci || EXIT_CODE=$?
+
+# Generate Allure report
+npm run report
+
+# Exit with the test status
+exit ${EXIT_CODE}
