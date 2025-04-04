@@ -1,0 +1,20 @@
+{
+    "IronMan":{
+        "userId": "43711317-0868-4f87-994d-5b812f5e77d3",
+        "username": "tonystark@testmail.com",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6InRvbnlzdGFya0B0ZXN0bWFpbC5jb20iLCJwYXNzd29yZCI6IkNoYW5nZW1lQDEyMyIsImlhdCI6MTc0MzEzNDExN30.n9ydpHdgueEGQkoLgBnAN4dcZawIPHzzKpsx2yWXbyI",
+        "books": []
+    },
+    "Batman":{
+        "userID": "292834f8-5718-411f-8aa5-6211f90b627a",
+        "username": "Brucewayne@testmail.com",
+        "books": []
+    },
+    "Spiderman":
+    {
+        "userID": "731f79b9-d72d-4982-96af-0b52a48f25f8",
+        "username": "spiderman@testmail.com",
+        "books": []
+    }
+}
+    

@@ -1,0 +1,44 @@
+{
+  "name": "wdio-ts-pom-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "wdio run ./wdio.conf.ts",
+    "lint": "eslint 'tests/**/*.ts'",
+    "test:mocha": "mocha --require ts-node/register './tests/specs/basics_Tests/**/*.ts'",
+    "test:mochaWdio": "mocha --require ts-node/register './tests/specs/basics_Tests/uiaStandalone.test.ts'",
+    "test:bookStoreApi": "npx wdio wdio.conf.ts --mochaOpts.grep 'BookStoreApi'",
+    "test:grepFromCLI": "npx wdio wdio.conf.ts --grep 'userID'",
+    "test:wdio": "wdio run wdio.conf.ts --grep 'userID'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/chai": "^5.2.0",
+    "@types/lodash": "^4.17.16",
+    "@types/meow": "^5.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.13.11",
+    "@types/supertest": "^6.0.3",
+    "@wdio/allure-reporter": "^9.11.0",
+    "@wdio/cli": "^9.12.0",
+    "@wdio/globals": "^9.12.1",
+    "@wdio/local-runner": "^9.12.0",
+    "@wdio/mocha-framework": "^9.11.0",
+    "@wdio/spec-reporter": "^9.11.0",
+    "chai": "^5.2.0",
+    "dotenv": "^16.4.7",
+    "lodash": "^4.17.21",
+    "supertest": "^7.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
+    "wdio-json-reporter": "^4.0.1",
+    "webdriverio": "^9.12.3"
+  },
+  "dependencies": {
+    "meow": "^13.2.0"
+  }
+}
