@@ -7,8 +7,9 @@ import path from 'path';
 import { cli} from './runner-helpers/filter-spec-files';
 import { chromeCapabilities} from './browserCapabilities';
 import isArray from 'lodash/isArray';
-const __fileName = fileURLToPath(import.meta.url);
-const __dirname = dirname(__fileName);
+import { registerBrowserCommands} from '../utils/customCommands';
+import allureReporter from '@wdio/allure-reporter';
+import { setUpGlobalErrorHandlers } from './runner-helpers/error-handlers';
 
 function getGrepFromCLI(): string | undefined {
     const grepIndex = process.argv.indexOf('--grep');
@@ -17,6 +18,8 @@ function getGrepFromCLI(): string | undefined {
 
 const grepPattern = getGrepFromCLI() ? getGrepFromCLI() : cli.flags.grep ? 
 cli.flags.grep : process.env.GREP ? process.env.GREP : undefined;
+
+console.log('grepPattern:', grepPattern);
 
 export const customizer = (
     objValue: string | string[],
@@ -34,7 +37,7 @@ export const config: Options.Testrunner = {
     specs: [
         // './tests/specs/**/*.ts',
         // './tests/apis/**/*.ts',
-        './tests/specs/**/*.ts',
+        '../tests/**/*.ts',
         // './tests/specs/basics_Tests/dataType.test.ts',
     ],
 
@@ -61,15 +64,14 @@ export const config: Options.Testrunner = {
         
     ],
     */
-    logLevel: 'silent',
+    logLevel: 'info',
     bail: 0,
     waitforTimeout: 10000,
     connectionRetryTimeout: 120000,
     connectionRetryCount: 3,
     framework: 'mocha',
     injectGlobals: true,
-    reporters: ['spec',
-        ['allure', { outputDir: 'allure-results' }]],
+    reporters: ['spec'],
 
     // Options to be passed to Mocha.
     // See the full list at http://mochajs.org/
@@ -79,8 +81,11 @@ export const config: Options.Testrunner = {
         retries: 2,
         grep: grepPattern ? new RegExp(grepPattern, 'i') : undefined, // Dynamically apply grep
     },
+    // WDIO uses tsx to compile Tyepscript files
+    tsConfigPath:path.join(process.cwd(),'/tsconfig.json'), 
 
     beforeSession: function () {
+        console.log('Current directory:', process.cwd());
         if (grepPattern) {
             console.log(`Running tests matching: ${grepPattern}`);
         }
@@ -88,11 +93,17 @@ export const config: Options.Testrunner = {
 
     beforeTest: async function (test, context) {
         console.log('Test started to run with Title: ', test.title);
+        // console.log('BeforeTest(): context: ' , context);
+        if(process.env.PREPARE_ERROR){
+            throw new Error(`Skipping Test due to preparation error: ${process.env.PREPARE_ERROR}`)
+        }
     },
     afterTest: async function (test, context, { error, result, duration, passed, retries }) {
-        const screenshotPath = join(__dirname, 'screenshots', `${test.title.replace(/\s+/g, '_')}.png`);
-        await (browser).saveScreenshot(screenshotPath);
+        const screenshotPath = join(process.cwd(), 'screenshots', `${test.title.replace(/\s+/g, '_')}.png`);
+        const screenshotBuffer = await (browser).saveScreenshot(screenshotPath);
+        allureReporter.addAttachment(test.title, screenshotBuffer,'.png');
         console.log('Test completed with title: ', test.title);
+        // console.log('AfterTest(): context: ' , context);
     },
 
     // TypeScript support 
@@ -106,8 +117,14 @@ export const config: Options.Testrunner = {
         }
     },
     */
-    before: function () {
+    before: async function () {
         console.log('Process Object: ', process);
+        // registerBrowserCommands();
+        console.log('Process.env.NODE_ENV: ' , process.env.NODE_ENV);
     },
+
+    onPrepare: async function(config,capabilities){
+        setUpGlobalErrorHandlers();
+    }
 
 }

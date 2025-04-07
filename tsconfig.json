@@ -21,7 +21,8 @@
       ],
     },
     "include": [
-      "tests/specs/**/*.test.ts",
-      "config/wdio.conf.ts"
+      "tests/specs/**/*.ts",
+      "config/**/*",
+      "utils/**/*"
     ]
   }

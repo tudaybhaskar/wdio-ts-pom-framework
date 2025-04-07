@@ -9,6 +9,7 @@ export const config = mergewith(
         hostname: 'localhost',
         port: 4444,
         path: '/wd/hub', // Selenium Grid
+        services:[],
         logLevels:{
             '@wdio/runner':'error',
             'webdriverio': 'error'

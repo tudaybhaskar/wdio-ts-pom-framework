@@ -1,0 +1,14 @@
+{
+    "validUser1": {
+      "emailAddress": "BruceWayne@testmail.com",
+      "password": "changeme"
+    },
+    "validaUser2":{
+        "validaUser2" : "tonystark@testmail.com",
+        "password" : "changeme"
+    },
+    "invalidUser": {
+      "emailAddress": "invaliduser@example.com",
+      "password": "WrongPass"
+    }
+  }

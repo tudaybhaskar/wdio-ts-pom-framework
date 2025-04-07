@@ -11,9 +11,10 @@
     "test:bookStoreApi": "npx wdio wdio.conf.ts --mochaOpts.grep 'BookStoreApi'",
     "test:grepFromCLI": "npx wdio wdio.conf.ts --grep 'userID'",
     "test:wdio": "wdio run wdio.conf.ts --grep 'userID'",
-    "test:ci": "GREP='BookStoreAPI' wdio run ./config/wdio.ci.conf.ts",
+    "test:ci": "GREP='credentials' wdio run ./config/wdio.ci.conf.ts",
     "clean": "rm -rf ./allure-results && rm -rf ./allure-report",
-    "report": "allure generate allure-results --clean -o allure-report && allure open allure-report"
+    "report": "allure generate allure-results --clean -o allure-report && allure open allure-report",
+    "test:openCart": "wdio run ./config/wdio.local.conf.ts --grep 'credentials'"
   },
   "keywords": [],
   "author": "",
@@ -33,8 +34,8 @@
     "@wdio/mocha-framework": "^9.11.0",
     "@wdio/spec-reporter": "^9.11.0",
     "chai": "^5.2.0",
+    "chromedriver": "^135.0.0",
     "dotenv": "^16.4.7",
-    "lodash": "^4.17.21",
     "supertest": "^7.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
@@ -42,6 +43,7 @@
     "webdriverio": "^9.12.3"
   },
   "dependencies": {
+    "lodash": "^4.17.21",
     "meow": "^13.2.0"
   }
 }

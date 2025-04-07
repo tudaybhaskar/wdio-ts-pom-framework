@@ -7,5 +7,5 @@ describe('Test on DataTypes', ()=>{
 
         expect(typeof unionValue).to.equal('string');
         expect(typeof unionValue1).to.equal('number');
-    })
+    });
 })

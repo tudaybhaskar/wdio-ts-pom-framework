@@ -14,7 +14,11 @@ export const chromeCapabilities = {
             'download.prompt_for_download': false,
             'safebrowsing.enabled': true,
         }
-    }
+    },
+    timeouts: {
+        script: 20000,
+        pageLoad: 20000
+      },
 }
 
 export const ciChromeCapabilities = {
@@ -28,5 +32,6 @@ export const ciChromeCapabilities = {
             '--disable-infobars',
             '--window-size=1920,1080',
         ],
-    }
+    },
+    platformName: 'LINUX'
 }
