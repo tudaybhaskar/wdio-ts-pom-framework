@@ -1,38 +1,44 @@
 pipeline {
-    agent any 
-    
+    agent any
     environment {
         NODEJS_HOME = '/usr/local/bin/node'
+        BASE_URL = 'https://your-test-env.com'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'master', 
-                url: 'https://github.com/tudaybhaskar/wdio-ts-pom-framework.git'
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                sh 'yarn install --frozen-lockfile'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'chmod +x run-tests.sh'
-                sh './run-tests.sh'
+                script {
+                    sh """
+                        chmod +x e2e-run-tests.sh
+                        ./e2e-run-tests.sh \
+                            "$BASE_URL" \
+                            "smoke" \
+                            "" \
+                            "" \
+                            "" \
+                            "quarantine"
+                    """
+                }
             }
             post {
                 always {
-                    script {
-                        if (fileExists('allure-results')) {
-                            allure includeProperties: false, 
-                                  jdk: '', 
-                                  results: [[path: 'allure-results']]
-                        }
-                        sh 'pkill -f "allure open" || true'
+                    if (fileExists('wdio/allure-results')) {
+                        allure includeProperties: false, 
+                        jdk: '', 
+                        results: [[path: 'wdio/allure-results']]
                     }
                 }
             }
@@ -41,8 +47,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'allure-report/**', 
-            fingerprint: true
+            archiveArtifacts artifacts: 'wdio/allure-report/**'
             cleanWs()
         }
     }

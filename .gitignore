@@ -1,10 +1,19 @@
 node_modules/
 
 .env
-allure-results/
+wdio/allure-results/
 screenshots
 wdio.conf copy.txt
 
-allure-report/
+wdio/allure-report/
 *.log
 .DS_Store
+
+Jenkinsfile.txt
+
+# Yarn
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/versions
+.pnp.*
