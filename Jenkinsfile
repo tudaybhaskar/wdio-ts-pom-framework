@@ -1,11 +1,23 @@
 pipeline {
     agent any
     environment {
-        NODEJS_HOME = '/usr/local/bin/node'
-        BASE_URL = 'https://your-test-env.com'
+        // Enable Corepack in Jenkins
+        PATH = "${tool 'NodeJS'}/bin:${env.PATH}"
+        BASE_URL = params.BASE_URL ?: 'https://your-test-env.com'
     }
 
     stages {
+        stage('Setup Environment') {
+            steps {
+                script {
+                    // Auto-install correct Yarn version from package.json
+                    sh '''
+                        corepack enable
+                        corepack prepare --all
+                    '''
+                }
+            }
+        }
         stage('Checkout') {
             steps {
                 checkout scm
@@ -14,7 +26,10 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'yarn install --frozen-lockfile'
+                // sh # Ensure Yarn is used per package.json
+                // corepack enable
+                // sh 'yarn install --frozen-lockfile'
+                yarn install --immutable
             }
         }
 
@@ -50,5 +65,8 @@ pipeline {
             archiveArtifacts artifacts: 'wdio/allure-report/**'
             cleanWs()
         }
+    }
+    parameters {
+        string(name: 'BASE_URL', defaultValue: 'https://your-test-env.com', description: 'Test environment URL')
     }
 }
