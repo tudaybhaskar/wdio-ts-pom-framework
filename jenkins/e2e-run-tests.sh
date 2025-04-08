@@ -20,7 +20,10 @@ run_Wdio(){
     [ -n "$exclude_tag" ] && cmd+=" --excludeTag=$exclude_tag"
 
     echo "Executing: $cmd"
-    eval "$cmd"
+    if ! eval "$cmd"; then
+        echo "Test execution failed"
+        exit 1
+    fi
 }
 
 # Example: Run smoke tests excluding quarantined

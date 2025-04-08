@@ -19,7 +19,6 @@ export const config = mergeWith({}, baseConfig,
                     disableWebdriverScreenshotsReporting: false,
                     issueLinkTemplate:'https://template.com/test-01/{}',
                     addConsoleLogs: true,
-
                 }
             ]
         ]

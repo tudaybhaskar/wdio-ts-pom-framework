@@ -1,8 +1,10 @@
 pipeline {
     agent any
     environment {
-        // Enable Corepack in Jenkins
-        PATH = "${tool 'NodeJS'}/bin:${env.PATH}"
+        // Dynamic versions will be set in Setup stage
+        NODE_VERSION = ""
+        YARN_VERSION = ""
+        TEST_SCRIPT = "jenkins/e2e-run-tests.sh"
         BASE_URL = params.BASE_URL ?: 'https://your-test-env.com'
     }
 
@@ -10,50 +12,83 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 script {
-                    // Auto-install correct Yarn version from package.json
+                    // Ensure Yarn binary exists
                     sh '''
-                        corepack enable
-                        corepack prepare --all
+                    mkdir -p .yarn/releases
+                    if [ ! -f .yarn/releases/yarn-4.8.1.cjs ]; then
+                        echo "Downloading Yarn 4.8.1..."
+                        curl -L https://github.com/yarnpkg/berry/raw/%40yarnpkg/cli/4.8.1/packages/yarnpkg-cli/bin/yarn.js \
+                            -o .yarn/releases/yarn-4.8.1.cjs
+                        chmod +x .yarn/releases/yarn-4.8.1.cjs
+                    fi
                     '''
+
+                    // Read versions from config files
+                    NODE_VERSION = sh(script: "cat .nvmrc | tr -d '[:space:]'", returnStdout: true).trim()
+                    YARN_VERSION = sh(script: """
+                        grep yarnPath .yarnrc.yml | cut -d'-' -f2 | cut -d'.' -f1-3
+                    """, returnStdout: true).trim()
+
+                    // Configure paths
+                    env.PATH = "${tool "NodeJS-${NODE_VERSION}"}/bin:${env.PATH}"
                 }
             }
         }
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
+        stage('Install Tools') {
+            steps {
+                sh """
+                    # Verify Node
+                    if ! node --version | grep -q "v${NODE_VERSION}"; then
+                        echo "ERROR: Need Node ${NODE_VERSION}"
+                        exit 1
+                    fi
+
+                    # Verify Yarn
+                    if ! yarn --version | grep -q "${YARN_VERSION}"; then
+                        echo "ERROR: Need Yarn ${YARN_VERSION}"
+                        exit 1
+                    fi
+                """
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
-                // sh # Ensure Yarn is used per package.json
-                // corepack enable
-                // sh 'yarn install --frozen-lockfile'
-                yarn install --immutable
+                sh '''
+                yarn config set nodeLinker node-modules
+                yarn install --immutable --inline-builds
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                script {
-                    sh """
-                        chmod +x e2e-run-tests.sh
-                        ./e2e-run-tests.sh \
-                            "$BASE_URL" \
-                            "smoke" \
-                            "" \
-                            "" \
-                            "" \
-                            "quarantine"
-                    """
-                }
+                sh """
+                    chmod +x ${TEST_SCRIPT}
+                    ./${TEST_SCRIPT} \
+                        "${BASE_URL}" \
+                        "smoke" \
+                        "" \
+                        "" \
+                        "" \
+                        "quarantine"
+                """
             }
             post {
                 always {
-                    if (fileExists('wdio/allure-results')) {
-                        allure includeProperties: false, 
-                        jdk: '', 
-                        results: [[path: 'wdio/allure-results']]
+                    script {
+                        if (fileExists('wdio/allure-results')) {
+                            allure includeProperties: false,
+                                  jdk: '',
+                                  results: [[path: 'wdio/allure-results']]
+                        }
                     }
                 }
             }
@@ -62,11 +97,18 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'wdio/allure-report/**'
+            script {
+                if (fileExists('wdio/allure-report')) {
+                    archiveArtifacts artifacts: 'wdio/allure-report/**'
+                }
+            }
             cleanWs()
         }
     }
+
     parameters {
-        string(name: 'BASE_URL', defaultValue: 'https://your-test-env.com', description: 'Test environment URL')
+        string(name: 'BASE_URL', 
+               defaultValue: 'https://your-test-env.com', 
+               description: 'Test environment URL')
     }
 }

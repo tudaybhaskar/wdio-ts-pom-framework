@@ -48,9 +48,9 @@
   },
   "repository": "https://github.com/tudaybhaskar/wdio-ts-pom-framework.git",
   "private": true,
-  "packageManager": "yarn@4.7.0",
+  "packageManager": "yarn@4.8.1",
   "engines": {
     "node": "23.7.0",
-    "yarn": "4.7.0"
+    "yarn": "4.8.1"
   }
 }
