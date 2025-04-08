@@ -3,6 +3,8 @@ pipeline {
     environment {
         TEST_SCRIPT = 'jenkins/e2e-run-tests.sh'
         BASE_URL = "${params.BASE_URL ?: 'https://your-test-env.com'}"
+        ALLURE_RESULTS = 'wdio/allure-results'
+        ALLURE_REPORT = 'wdio/allure-report'
     }
 
     stages {
@@ -71,6 +73,10 @@ pipeline {
                         echo "Error: Test script not found at ${env.TEST_SCRIPT}"
                         exit 1
                     fi
+
+                    # Clean previous results
+                    rm -rf ${ALLURE_RESULTS} ${ALLURE_REPORT} || true
+
                     chmod +x ${env.TEST_SCRIPT}
                     ./${env.TEST_SCRIPT} \
                         "${env.BASE_URL}" \
@@ -85,11 +91,26 @@ pipeline {
             post {
                 always {
                     script {
-                        if (fileExists('wdio/allure-results')) {
-                            allure includeProperties: false,
-                                  jdk: '',
-                                  results: [[path: 'wdio/allure-results']]
+                        if (fileExists(ALLURE_REPORT)) {
+                            sh """
+                            allure generate ${ALLURE_RESULTS} --clean -o ${ALLURE_REPORT}
+                            """
+                        } else {
+                            echo "Warning: No Allure results found at ${ALLURE_RESULTS}"
                         }
+                    }
+                }
+            }
+        }
+        stage('Allure Report') {
+            steps {
+                script {
+                    if (fileExists(ALLURE_REPORT)) {
+                        // Archive and publish Allure report
+                        archiveArtifacts artifacts: "${ALLURE_REPORT}/**"
+                        allure includeProperties: false,
+                              jdk: '',
+                              results: [[path: ALLURE_RESULTS]]
                     }
                 }
             }
@@ -99,8 +120,10 @@ pipeline {
     post {
         always {
             script {
-                if (fileExists('wdio/allure-report')) {
-                    archiveArtifacts artifacts: 'wdio/allure-report/**'
+                // Additional cleanup if needed
+                if (fileExists(ALLURE_REPORT)) {
+                    sh "tar -czf allure-report.tar.gz ${ALLURE_REPORT}"
+                    archiveArtifacts artifacts: 'allure-report.tar.gz'
                 }
             }
             cleanWs()

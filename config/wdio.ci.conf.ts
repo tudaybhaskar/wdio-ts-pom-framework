@@ -15,6 +15,18 @@ export const config = mergewith(
             'webdriverio': 'error'
         },
         capabilities:[ciChromeCapabilities],
-        maxInstances: 2 //Run tests in parallel
+        maxInstances: 2, //Run tests in parallel
+        reporters:[
+            [
+                'allure',
+                {
+                    outputDir: 'wdio/allure-results',
+                    disableWebdriverStepsReporting: false, // Request and Response will be captured if set to true
+                    disableWebdriverScreenshotsReporting: false,
+                    issueLinkTemplate:'https://template.com/test-01/{}',
+                    addConsoleLogs: false,
+                }
+            ]
+        ],
     },baseConfig, customizer
 )
