@@ -3,8 +3,8 @@ pipeline {
     environment {
         TEST_SCRIPT = 'jenkins/e2e-run-tests.sh'
         BASE_URL = "${params.BASE_URL ?: 'https://your-test-env.com'}"
-        ALLURE_RESULTS = 'wdio/allure-results'
-        ALLURE_REPORT = 'wdio/allure-report'
+        ALLURE_RESULTS = 'allure-results'
+        ALLURE_REPORT = 'allure-report'
     }
 
     stages {

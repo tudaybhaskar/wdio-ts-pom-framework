@@ -9,8 +9,12 @@ run_Wdio(){
     local include_tag="$5"
     local exclude_tag="$6"
 
-    #Base command using yarn
-    local cmd="yarn wdio run ./config/wdio.conf.ts"
+    # Clean previous results
+    echo "Cleaning previous Allure results..."
+    rm -rf allure-results allure-report || true
+
+    # Base command using yarn
+    local cmd="yarn wdio run ./config/wdio.ci.conf.ts"
 
     #Append parameters if specified
     [ -n "$suite" ] && cmd+=" --suite=$suite"
@@ -21,8 +25,30 @@ run_Wdio(){
     [ -n "$exclude_tag" ] && cmd+=" --excludeTag=$exclude_tag"
 
     echo "Executing: $cmd"
+    
+    # Run tests and capture exit code
     if ! eval "$cmd"; then
         echo "Test execution failed"
+        # Still generate report if results exist
+        generate_allure_report
+        exit 1
+    fi
+
+    # Generate Allure report if tests passed
+    generate_allure_report
+}
+
+ Function to generate Allure report
+generate_allure_report() {
+    if [ -d "allure-results" ]; then
+        echo "Generating Allure report..."
+        yarn allure generate allure-results --clean -o allure-report || {
+            echo "Failed to generate Allure report"
+            exit 1
+        }
+        echo "Allure report generated at: $(pwd)/allure-report"
+    else
+        echo "Warning: No Allure results found at allure-results"
         exit 1
     fi
 }

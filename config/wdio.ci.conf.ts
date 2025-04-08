@@ -20,7 +20,7 @@ export const config = mergewith(
             [
                 'allure',
                 {
-                    outputDir: 'wdio/allure-results',
+                    outputDir: 'allure-results',
                     disableWebdriverStepsReporting: false, // Request and Response will be captured if set to true
                     disableWebdriverScreenshotsReporting: false,
                     issueLinkTemplate:'https://template.com/test-01/{}',
