@@ -10,10 +10,11 @@ run_Wdio(){
     local exclude_tag="$6"
 
     #Base command using yarn
-    local cmd="yarn wdio run ./config/wdio.conf.ts --baseUrl=$base_url"
+    local cmd="yarn wdio run ./config/wdio.conf.ts"
 
     #Append parameters if specified
     [ -n "$suite" ] && cmd+=" --suite=$suite"
+    [ -n "$base_url" ] && cmd+=" --baseUrl=$base_url"
     [ -n "$include_ptid" ] && cmd+=" --includePTID=$include_ptid"
     [ -n "$exclude_ptid" ] && cmd+=" --excludePTID=$exclude_ptid"
     [ -n "$include_tag" ] && cmd+=" --includeTag=$include_tag"
