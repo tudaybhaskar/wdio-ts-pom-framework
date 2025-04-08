@@ -56,4 +56,4 @@ generate_allure_report() {
 # Execute with optional parameters
 # $1 = suite (optional)
 # $2 = baseUrl (optional)
-run_tests "$1" "$2"
+run_Wdio "$1" "$2"
