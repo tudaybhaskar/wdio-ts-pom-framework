@@ -5,7 +5,8 @@ pipeline {
         NODE_VERSION = ""
         YARN_VERSION = ""
         TEST_SCRIPT = "jenkins/e2e-run-tests.sh"
-        BASE_URL = params.BASE_URL ?: 'https://your-test-env.com'
+        // Safe parameter handling - Jenkins Error Throwed
+        BASE_URL = "${params.BASE_URL ? params.BASE_URL : 'https://your-test-env.com'}"
     }
 
     stages {
