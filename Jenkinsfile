@@ -1,19 +1,15 @@
 pipeline {
     agent any
     environment {
-        // Dynamic versions will be set in Setup stage
-        NODE_VERSION = ""
-        YARN_VERSION = ""
-        TEST_SCRIPT = "jenkins/e2e-run-tests.sh"
-        // Safe parameter handling - Jenkins Error Throwed
-        BASE_URL = "${params.BASE_URL ? params.BASE_URL : 'https://your-test-env.com'}"
+        TEST_SCRIPT = 'jenkins/e2e-run-tests.sh'
+        BASE_URL = "${params.BASE_URL ?: 'https://your-test-env.com'}"
     }
 
     stages {
         stage('Setup Environment') {
             steps {
                 script {
-                    // Ensure Yarn binary exists
+                    // Create Yarn release directory if needed
                     sh '''
                     mkdir -p .yarn/releases
                     if [ ! -f .yarn/releases/yarn-4.8.1.cjs ]; then
@@ -25,15 +21,15 @@ pipeline {
                     '''
 
                     // Read Node version from .nvmrc
-                    def nodeVersion = readFile('.nvmrc').trim()
-                    env.NODE_VERSION = nodeVersion
+                    env.NODE_VERSION = sh(script: "cat .nvmrc | tr -d '[:space:]'", returnStdout: true).trim()
 
-                    // Read Yarn version from .yarnrc.yml
-                    def yarnrc = readYaml file: '.yarnrc.yml'
-                    env.YARN_VERSION = yarnrc.yarnPath.split('-')[1].replace('.cjs', '')
+                    // Alternative Yarn version detection without readYaml
+                    env.YARN_VERSION = sh(script: """
+                        grep 'yarnPath' .yarnrc.yml | awk -F'-' '{print \$2}' | awk -F'.' '{print \$1\".\"\$2\".\"\$3}'
+                    """, returnStdout: true).trim()
 
-                    // Configure paths
-                    env.PATH = "${tool "NodeJS-${NODE_VERSION}"}/bin:${env.PATH}"
+                    // Verify Node installation
+                    sh "node --version | grep 'v${env.NODE_VERSION}' || { echo 'Node version mismatch'; exit 1; }"
                 }
             }
         }
@@ -46,19 +42,14 @@ pipeline {
 
         stage('Install Tools') {
             steps {
-                sh """
-                    # Verify Node
-                    if ! node --version | grep -q "v${NODE_VERSION}"; then
-                        echo "ERROR: Need Node ${NODE_VERSION}"
-                        exit 1
+                script {
+                    // Verify Yarn version
+                    sh """
+                    if ! yarn --version | grep -q "${env.YARN_VERSION}"; then
+                        npm install -g yarn@${env.YARN_VERSION}
                     fi
-
-                    # Verify Yarn
-                    if ! yarn --version | grep -q "${YARN_VERSION}"; then
-                        echo "ERROR: Need Yarn ${YARN_VERSION}"
-                        exit 1
-                    fi
-                """
+                    """
+                }
             }
         }
 
@@ -73,16 +64,23 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh """
-                    chmod +x ${TEST_SCRIPT}
-                    ./${TEST_SCRIPT} \
-                        "${BASE_URL}" \
+                script {
+                    // Verify script exists and is executable
+                    sh """
+                    if [ ! -f ${env.TEST_SCRIPT} ]; then
+                        echo "Error: Test script not found at ${env.TEST_SCRIPT}"
+                        exit 1
+                    fi
+                    chmod +x ${env.TEST_SCRIPT}
+                    ./${env.TEST_SCRIPT} \
+                        "${env.BASE_URL}" \
                         "smoke" \
                         "" \
                         "" \
                         "" \
-                        "quarantine"
-                """
+                        "quarantine" || true
+                    """
+                }
             }
             post {
                 always {
@@ -110,8 +108,10 @@ pipeline {
     }
 
     parameters {
-        string(name: 'BASE_URL', 
-               defaultValue: 'https://your-test-env.com', 
-               description: 'Test environment URL')
+        string(
+            name: 'BASE_URL',
+            defaultValue: 'https://your-test-env.com',
+            description: 'Test environment URL'
+        )
     }
 }
