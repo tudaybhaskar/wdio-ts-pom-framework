@@ -14,7 +14,7 @@ run_Wdio(){
     rm -rf allure-results allure-report || true
 
     # Base command using yarn
-    local cmd="yarn wdio run ./config/wdio.ci.conf.ts"
+    local cmd="yarn wdio run ./config/wdio.ci.conf.ts --grep 'credentials'"
 
     #Append parameters if specified
     [ -n "$suite" ] && cmd+=" --suite=$suite"
@@ -53,5 +53,7 @@ generate_allure_report() {
     fi
 }
 
-# Example: Run smoke tests excluding quarantined
-run_wdio "$@"
+# Execute with optional parameters
+# $1 = suite (optional)
+# $2 = baseUrl (optional)
+run_tests "$1" "$2"

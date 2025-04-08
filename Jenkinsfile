@@ -78,13 +78,7 @@ pipeline {
                     rm -rf ${ALLURE_RESULTS} ${ALLURE_REPORT} || true
 
                     chmod +x ${env.TEST_SCRIPT}
-                    ./${env.TEST_SCRIPT} \
-                        "${env.BASE_URL}" \
-                        "smoke" \
-                        "" \
-                        "" \
-                        "" \
-                        "quarantine" || true
+                    ./${env.TEST_SCRIPT}
                     """
                 }
             }
@@ -109,8 +103,9 @@ pipeline {
                         // Archive and publish Allure report
                         archiveArtifacts artifacts: "${ALLURE_REPORT}/**"
                         allure includeProperties: false,
-                              jdk: '',
-                              results: [[path: ALLURE_RESULTS]]
+                        jdk: '',
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: ALLURE_RESULTS]]
                     }
                 }
             }
