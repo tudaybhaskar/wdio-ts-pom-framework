@@ -24,11 +24,13 @@ pipeline {
                     fi
                     '''
 
-                    // Read versions from config files
-                    NODE_VERSION = sh(script: "cat .nvmrc | tr -d '[:space:]'", returnStdout: true).trim()
-                    YARN_VERSION = sh(script: """
-                        grep yarnPath .yarnrc.yml | cut -d'-' -f2 | cut -d'.' -f1-3
-                    """, returnStdout: true).trim()
+                    // Read Node version from .nvmrc
+                    def nodeVersion = readFile('.nvmrc').trim()
+                    env.NODE_VERSION = nodeVersion
+
+                    // Read Yarn version from .yarnrc.yml
+                    def yarnrc = readYaml file: '.yarnrc.yml'
+                    env.YARN_VERSION = yarnrc.yarnPath.split('-')[1].replace('.cjs', '')
 
                     // Configure paths
                     env.PATH = "${tool "NodeJS-${NODE_VERSION}"}/bin:${env.PATH}"
